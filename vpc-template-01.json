@@ -1,0 +1,26 @@
+{
+  "Parameters": {
+    "CIDRRange": {
+      "Description": "VPCCIDR Range (will be a /16 block)",
+      "Type": "String",
+      "Default": "10.251.0.0",
+      "AllowedValues": ["10.250.0.0","10.251.0.0"]
+    }
+  },
+  "Resources": {
+    "VPCBase": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": { "Fn::Join" : ["", [{ "Ref" : "CIDRRange" }, "/16"]] },
+        "EnableDnsSupport": "True",
+        "EnableDnsHostnames": "True",
+        "Tags": [
+          { "Key": "Name", "Value":    { "Fn::Join" : ["", [{ "Ref" : "AWS::StackName" }, "-VPC"]] } }
+        ]
+      }
+    }
+  },
+    "Outputs": {
+    "VPCID" : { "Value" : { "Ref" : "VPCBase" } }
+  }
+}
