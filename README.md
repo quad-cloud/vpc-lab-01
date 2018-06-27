@@ -85,3 +85,56 @@ aws> cloudformation update-stack --stack-name quad-vpc-b3 --template-body file:/
 ```
 
 #### Step - 3 [Add 3 more Subnets]
+Add the following snippet to the **"Resources"** section of the template
+```json
+"PublicNetAZ2": {
+  "Type": "AWS::EC2::Subnet",
+  "Properties": {
+    "AvailabilityZone": { "Fn::Select": [ "1", { "Fn::GetAZs": { "Ref": "AWS::Region" } } ] },
+    "CidrBlock": { "Fn::FindInMap" : [ "VPCRanges", { "Ref": "CIDRRange"},  "PublicSubnetAZ2" ] },
+    "MapPublicIpOnLaunch": "True",
+    "Tags": [
+      { "Key": "Name", "Value": { "Fn::Join" : ["", [{ "Ref" : "AWS::StackName" }, "-PublicAZ2"]] } }
+    ],
+    "VpcId": { "Ref": "VPCBase" }
+  }
+},
+"PrivateNetAZ1": {
+  "Type": "AWS::EC2::Subnet",
+  "Properties": {
+    "AvailabilityZone": { "Fn::Select": [ "0", { "Fn::GetAZs": { "Ref": "AWS::Region" } } ] },
+    "CidrBlock": { "Fn::FindInMap" : [ "VPCRanges", { "Ref": "CIDRRange"},  "PrivateSubnetAZ1" ] },
+    "MapPublicIpOnLaunch": "False",
+    "Tags": [
+      { "Key": "Name", "Value": { "Fn::Join" : ["", [{ "Ref" : "AWS::StackName" }, "-PrivateAZ1"]] } },
+      { "Key": "Network", "Value": "private" }
+    ],
+    "VpcId": { "Ref": "VPCBase" }
+  }
+},
+"PrivateNetAZ2": {
+  "Type": "AWS::EC2::Subnet",
+  "Properties": {
+    "AvailabilityZone": { "Fn::Select": [ "1", { "Fn::GetAZs": { "Ref": "AWS::Region" } } ] },
+    "CidrBlock": { "Fn::FindInMap" : [ "VPCRanges", { "Ref": "CIDRRange"},  "PrivateSubnetAZ2" ] },
+    "MapPublicIpOnLaunch": "False",
+    "Tags": [
+      { "Key": "Name", "Value": { "Fn::Join" : ["", [{ "Ref" : "AWS::StackName" }, "-PrivateAZ2"]] } },
+      { "Key": "Network", "Value": "private" }
+    ],
+    "VpcId": { "Ref": "VPCBase" }
+  }
+}
+```
+
+Add the following snippet to the **"Outputs"** section of the template
+```json
+"SubnetPublicAZ2" : { "Value" : { "Ref" : "PublicNetAZ2"} },
+"SubnetPrivateAZ1" : { "Value" : { "Ref" : "PrivateNetAZ1"} },
+"SubnetPrivateAZ2" : { "Value" : { "Ref" : "PrivateNetAZ2"} }
+```
+
+Update the existing stack to create the 3 Subnets in the VPC
+```bash
+aws> cloudformation update-stack --stack-name quad-vpc-b3 --template-body file://vpc-template-03.json
+```
